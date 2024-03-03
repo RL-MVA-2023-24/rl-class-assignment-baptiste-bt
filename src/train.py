@@ -38,6 +38,7 @@ class ProjectAgent:
         print(f"Mean: {self.agent.obs_running_mean}")
         print(f"Var: {self.agent.obs_running_var}")
 
+
     def load(self):
         state_dict = torch.load("agent.pth")
         self.agent.policy.load_state_dict(state_dict['policy_state_dict'])
