@@ -8,7 +8,7 @@ import time
 from datetime import datetime
 
 env = TimeLimit(
-    env=HIVPatient(domain_randomization=False), max_episode_steps=200
+    env=HIVPatient(domain_randomization=True), max_episode_steps=200
 )  # The time wrapper limits the number of steps in an episode at 200.
 # Now is the floor is yours to implement the agent and train it.
 
@@ -38,9 +38,8 @@ class ProjectAgent:
         print(f"Mean: {self.agent.obs_running_mean}")
         print(f"Var: {self.agent.obs_running_var}")
 
-
     def load(self):
-        state_dict = torch.load("agent.pth")
+        state_dict = torch.load("agent.pth", map_location="cpu")
         self.agent.policy.load_state_dict(state_dict['policy_state_dict'])
         self.agent.optimizer.load_state_dict(state_dict['optimizer_state_dict'])
         self.agent.obs_running_mean = state_dict['observation_mean']
@@ -51,10 +50,11 @@ class ProjectAgent:
 
     def train(self, total_timesteps=10_000, run_name="ppo"):
         self.agent.train(total_timesteps, 
-                         make_env=lambda: Monitor(TimeLimit(env=HIVPatient(domain_randomization=False), max_episode_steps=200)),
+                         make_env=lambda: Monitor(TimeLimit(env=HIVPatient(domain_randomization=True), max_episode_steps=200)),
                          run_name=run_name)
 
     def evaluate(self, env, nb_episode):
+        self.agent.policy = self.agent.policy.to(torch.device("cpu"))
         rewards = []
         actions = [0] * 4
         for _ in range(nb_episode):
